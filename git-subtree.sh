@@ -520,6 +520,8 @@ cmd_add()
 	    say "error: parameters were '$@'"
 	    die "Provide either a refspec or a repository and refspec."
 	fi
+
+	exit 0
 }
 
 cmd_add_repository()
