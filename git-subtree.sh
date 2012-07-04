@@ -769,6 +769,7 @@ cmd_diff()
 		die "Cannot resolve directory '$dir'. Please point to an existing subtree directory to diff. Try 'git subtree add' to add a subtree."
 	fi
 }
+
 cmd_push()
 {
 	if [ $# -gt 2 ]; then
