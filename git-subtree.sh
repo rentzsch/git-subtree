@@ -831,7 +831,22 @@ cmd_from-submodule()
 	# Move submodule aside.
 	local tmp_repo="$(mktemp -d /tmp/git-subtree.XXXXX)"
 	rm -r $tmp_repo
-	mv $prefix $tmp_repo
+	if [ -f $prefix/.git ]
+	then
+		# Have to unset core.worktree or this will suffer
+		(cd $prefix && git config --unset core.worktree)
+
+		# Handle new git submodules stored in parent repo
+		local actual_git=$(sed -e 's/^gitdir: //' $prefix/.git)
+		local tmp_git="$(mktemp -d /tmp/git-subtree.XXXXX)"
+		mv $prefix/$actual_git $tmp_git/.git
+		mv $prefix $tmp_repo
+		rm $tmp_repo/.git
+		mv $tmp_git/.git $tmp_repo/.git
+		rm -rf $tmp_git
+	else
+		mv $prefix $tmp_repo
+	fi
 	git rm $prefix
 
 	# Commit changes.
