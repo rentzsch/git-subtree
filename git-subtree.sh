@@ -333,83 +333,89 @@ copy_commit()
 
 add_msg()
 {
-	dir="$1"
-	latest_old="$2"
-	latest_new="$3"
+	dir="$1" ; shift
+	latest_old="$1" ; shift
+	latest_new="$1" ; shift
+
 	if [ -n "$message" ]; then
-		commit_message="$message"
-	else
-		commit_message="Add '$dir/' from commit '$latest_new'"
+		echo "$message"
+		echo ""
 	fi
-	cat <<-EOF
-		$commit_message
-		
-		git-subtree-dir: $dir
-		git-subtree-mainline: $latest_old
-		git-subtree-split: $latest_new
-	EOF
+
+	echo "git-subtree-comment: Add '$dir/' from commit '$latest_new'"
+	echo "git-subtree-dir: $dir"
+	echo "git-subtree-mainline: $latest_old"
+	echo "git-subtree-split: $latest_new"
 }
 
 add_squashed_msg()
 {
+	from="$1" ; shift
+	to="$1" ; shift
+
 	if [ -n "$message" ]; then
 		echo "$message"
-	else
-		echo "Merge commit '$1' as '$2'"
+		echo ""
 	fi
+
+	echo "git-subtree-comment: Merge commit '$1' as '$2'"	
 }
 
 rejoin_msg()
 {
-	dir="$1"
-	latest_old="$2"
-	latest_new="$3"
+	dir="$1" ; shift
+	latest_old="$1" ; shift
+	latest_new="$1" ; shift
+
 	if [ -n "$message" ]; then
-		commit_message="$message"
-	else
-		commit_message="Split '$dir/' into commit '$latest_new'"
+		echo "$message"
+		echo ""
 	fi
-	cat <<-EOF
-		$commit_message
-		
-		git-subtree-dir: $dir
-		git-subtree-mainline: $latest_old
-		git-subtree-split: $latest_new
-	EOF
+
+	echo "git-subtree-comment: Split '$dir/' into commit '$latest_new'"
+	echo "git-subtree-dir: $dir"
+	echo "git-subtree-mainline: $latest_old"
+	echo "git-subtree-split: $latest_new"
 }
 
 squash_msg()
 {
-	dir="$1"
-	oldsub="$2"
-	newsub="$3"
+	dir="$1" ; shift
+	oldsub="$1" ; shift
+	newsub="$1" ; shift
 	newsub_short=$(git rev-parse --short "$newsub")
+
+	if [ -n "$message" ]; then
+		echo "$message"
+		echo ""
+	fi
 	
 	if [ -n "$oldsub" ]; then
 		oldsub_short=$(git rev-parse --short "$oldsub")
-		echo "Squashed '$dir/' changes from $oldsub_short..$newsub_short"
-		echo
+
+		echo "git-subtree-comment: Squashed '$dir/' changes from $oldsub_short..$newsub_short"
 		git log --pretty=tformat:'%h %s' "$oldsub..$newsub"
 		git log --pretty=tformat:'REVERT: %h %s' "$newsub..$oldsub"
 	else
-		echo "Squashed '$dir/' content from commit $newsub_short"
+		echo "git-subtree-comment: Squashed '$dir/' content from commit $newsub_short"
 	fi
 	
-	echo
 	echo "git-subtree-dir: $dir"
 	echo "git-subtree-split: $newsub"
 }
 
 toptree_for_commit()
 {
-	commit="$1"
+	commit="$1" ; shift
+
 	git log -1 --pretty=format:'%T' "$commit" -- || exit $?
 }
 
 subtree_for_commit()
 {
-	commit="$1"
-	dir="$2"
+	commit="$1" ; shift
+	dir="$1" ; shift
+
 	git ls-tree "$commit" -- "$dir" |
 	while read mode type tree name; do
 		assert [ "$name" = "$dir" ]
@@ -422,8 +428,8 @@ subtree_for_commit()
 
 tree_changed()
 {
-	tree=$1
-	shift
+	tree=$1 ; shift
+	
 	if [ $# -ne 1 ]; then
 		return 0   # weird parents, consider it changed
 	else
@@ -520,6 +526,8 @@ cmd_add()
 	    say "error: parameters were '$@'"
 	    die "Provide either a refspec or a repository and refspec."
 	fi
+
+	exit 0
 }
 
 cmd_add_repository()
@@ -767,6 +775,7 @@ cmd_diff()
 		die "Cannot resolve directory '$dir'. Please point to an existing subtree directory to diff. Try 'git subtree add' to add a subtree."
 	fi
 }
+
 cmd_push()
 {
 	if [ $# -gt 2 ]; then
