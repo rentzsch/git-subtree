@@ -40,6 +40,9 @@ doc: git-subtree.1
 test:
 	./test.sh
 
+deb:
+	./make-package.sh
+
 clean:
 	rm -f *~ *.xml *.html *.1
 	rm -rf subproj mainline
