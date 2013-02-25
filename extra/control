@@ -1,0 +1,8 @@
+Package: git-subtree
+Priority: optional
+Section: misc
+Maintainer: Merkushin Michail <merkushin@gmail.com>
+Architecture: all
+Version: @VERSION@
+Depends: git
+Description: git subtree - https://github.com/rpavlik/git-subtree branch

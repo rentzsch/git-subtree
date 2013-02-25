@@ -1,5 +1,6 @@
 prefix ?= /usr/local
 mandir ?= $(prefix)/share/man
+htmldir ?= $(prefix)/share/doc/git-doc
 gitdir ?= $(shell git --exec-path)
 
 gitver ?= $(word 3,$(shell git --version))
@@ -24,22 +25,37 @@ install-exe: git-subtree.sh
 	$(INSTALL_DIR) $(DESTDIR)/$(gitdir)
 	$(INSTALL_EXE) $< $(DESTDIR)/$(gitdir)/git-subtree
 
-install-doc: git-subtree.1
+install-doc: install-man install-html
+
+install-man: git-subtree.1
 	$(INSTALL_DIR) $(DESTDIR)/$(mandir)/man1/
 	$(INSTALL_DATA) $< $(DESTDIR)/$(mandir)/man1/
 
-doc: git-subtree.1
+install-html: git-subtree.html
+	$(INSTALL_DIR) $(DESTDIR)/$(htmldir)/
+	$(INSTALL_DATA) $< $(DESTDIR)/$(htmldir)/
+
+doc: git-subtree.1 git-subtree.html
 
 %.1: %.xml
 	xmlto -m manpage-normal.xsl  man $^
 
-%.xml: %.txt
+%.xml: %.txt asciidoc.conf
 	asciidoc -b docbook -d manpage -f asciidoc.conf \
-		-agit_version=$(gitver) $^
-		
+		-agit_version=$(gitver) $<
+
+%.html: %.txt asciidoc.conf
+	asciidoc -b xhtml11 -d manpage -f asciidoc.conf \
+		-agit_version=$(gitver) $<
+
 test:
 	./test.sh
 
+deb:
+	./make-package.sh
+
 clean:
 	rm -f *~ *.xml *.html *.1
+	rm -f git-subtree_*.deb
+	rm -f install
 	rm -rf subproj mainline
