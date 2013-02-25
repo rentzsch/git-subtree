@@ -45,4 +45,6 @@ deb:
 
 clean:
 	rm -f *~ *.xml *.html *.1
+	rm -f git-subtree_*.deb
+	rm -f install
 	rm -rf subproj mainline
